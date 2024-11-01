@@ -11,3 +11,9 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.pokemon-card {
+  border: 1px solid #ddd;
+  padding: 15px;
+  margin: 10px;
+}
