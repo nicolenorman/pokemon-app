@@ -12,3 +12,15 @@ export type State = {
     pokemonB: Pokemon
   }
 };
+
+export type Move = {
+  move: {
+    name: string;
+    url: string;
+  }
+};
+
+export type MoveStats = {
+  name: string;
+  power: number;
+};
