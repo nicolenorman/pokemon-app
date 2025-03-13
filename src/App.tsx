@@ -1,47 +1,61 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import Pokemon from './components/Pokemon';
 import { updatePokemonA, updatePokemonB } from './features/pokemonSlice';
 import { useSelector } from 'react-redux';
 import './App.css';
-import { State, Move, MoveStats } from './types';
+import { IPokemon, IResult, State, Move, MoveStats } from './types';
+import { Button } from "antd";
 
 function App() {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [battleResult, setBattleResult] = useState<string>('');
   const pokemonA = useSelector((state: State) => state.pokemon.pokemonA);
   const pokemonB = useSelector((state: State) => state.pokemon.pokemonB);
+
   const dispatch = useDispatch();
 
+  useEffect(() => {
+    if (pokemonA.name && pokemonB.name) {
+      setBattleResult(calculateResult(pokemonA, pokemonB));
+    }
+  }, [pokemonA, pokemonB]);
+
   const choosePokemon = async () => {
+    setIsLoading(true);
+
     try {
       const pokemonList = await fetchJson('https://pokeapi.co/api/v2/pokemon/');
       const numPokemon = pokemonList.count;
       const pokemonAId = Math.floor(Math.random() * numPokemon) - 1;
       const pokemonBId = Math.floor(Math.random() * numPokemon) - 1;
   
-      const pokemonA = await fetchJson(`https://pokeapi.co/api/v2/pokemon/?offset=${pokemonAId}&limit=1`);
-      const pokemonAStats = await fetchJson(`https://pokeapi.co/api/v2/pokemon/${pokemonA.results[0].name}`);
+      const pokemonAPick = await fetchJson(`https://pokeapi.co/api/v2/pokemon/?offset=${pokemonAId}&limit=1`);
+      const pokemonAStats = await fetchJson(`https://pokeapi.co/api/v2/pokemon/${pokemonAPick.results[0].name}`);
       const pokemonAMove = await getMove(pokemonAStats['moves']);
   
-      const pokemonB = await fetchJson(`https://pokeapi.co/api/v2/pokemon/?offset=${pokemonBId}&limit=1`);
-      const pokemonBStats = await fetchJson(`https://pokeapi.co/api/v2/pokemon/${pokemonB.results[0].name}`);
+      const pokemonBPick = await fetchJson(`https://pokeapi.co/api/v2/pokemon/?offset=${pokemonBId}&limit=1`);
+      const pokemonBStats = await fetchJson(`https://pokeapi.co/api/v2/pokemon/${pokemonBPick.results[0].name}`);
       const pokemonBMove = await getMove(pokemonBStats['moves']);
   
       dispatch(updatePokemonA({
-        name: pokemonAStats['name'],
-        moveName: pokemonAMove['name'],
+        name: capitalize(pokemonAStats['name']),
+        moveName: capitalize(pokemonAMove['name']),
         movePower: pokemonAMove['power'],
         image: pokemonAStats['sprites']['front_default']
       }));
   
       dispatch(updatePokemonB({
-        name: pokemonBStats['name'],
-        moveName: pokemonBMove['name'],
+        name: capitalize(pokemonBStats['name']),
+        moveName: capitalize(pokemonBMove['name']),
         movePower: pokemonBMove['power'],
         image: pokemonBStats['sprites']['back_default'] ?? pokemonBStats['sprites']['front_default']
       }));
     } catch (error) {
       console.error('Fetch error', error);
     }
+
+    setIsLoading(false);
   };
 
   return (
@@ -51,7 +65,21 @@ function App() {
           { pokemonA.name && <Pokemon {...pokemonA} /> }
           { pokemonB.name && <Pokemon {...pokemonB} /> }
         </div>
-        <button onClick={() => {choosePokemon()}}>Start Battle!</button>
+
+        { battleResult &&
+          <div className="battleLog">
+            <p>{battleResult}</p>
+          </div>
+        }
+
+        <Button
+          type="primary"
+          size="large"
+          loading={isLoading}
+          onClick={() => {choosePokemon()}}
+        >
+          Start Battle!
+        </Button>
       </header>
     </div>
   );
@@ -68,6 +96,25 @@ async function getMove(moves: Move[] ): Promise<MoveStats> {
   const moveStats = await fetchJson(chosenMove['move']['url']);
 
   return moveStats;
+}
+
+function calculateResult(pokemonA: IPokemon, pokemonB: IPokemon) {
+  const pokemonAMovePower = pokemonA.movePower ?? 0;
+  const pokemonBMovePower = pokemonB.movePower ?? 0;
+  const isTie = pokemonAMovePower === pokemonBMovePower;
+
+  if (isTie) {
+    return `The battle ends in a tie! Both ${pokemonA.name} and ${pokemonB.name} attacked with equal moves.`;
+  } else {
+    const winner = pokemonAMovePower > pokemonBMovePower ? pokemonA : pokemonB;
+    const loser = winner === pokemonA ? pokemonB : pokemonA;
+
+    return `${winner.name} lands a decisive blow with ${winner.moveName} knocking out ${loser.name}!`;
+  }
+}
+
+function capitalize(s: string) {
+  return s[0].toUpperCase() + s.substr(1);
 }
 
 export default App;

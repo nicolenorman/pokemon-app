@@ -1,4 +1,4 @@
-type Pokemon = {
+export interface IPokemon {
   id: string
   name: string
   moveName: string
@@ -6,10 +6,17 @@ type Pokemon = {
   image: string
 };
 
+export interface IResult {
+  winnerName: string,
+  winnerMove: string,
+  loserName: string
+};
+
 export type State = {
   pokemon: {
-    pokemonA: Pokemon
-    pokemonB: Pokemon
+    pokemonA: IPokemon
+    pokemonB: IPokemon
+    result: IResult
   }
 };
 
