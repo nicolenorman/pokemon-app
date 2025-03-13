@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import './App.css';
 import { IPokemon, IResult, State, Move, MoveStats } from './types';
 import { Button } from "antd";
+import { ThunderboltOutlined } from '@ant-design/icons';
 
 function App() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -61,25 +62,38 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <div className="battleView">
-          { pokemonA.name && <Pokemon {...pokemonA} /> }
-          { pokemonB.name && <Pokemon {...pokemonB} /> }
-        </div>
+        <div className="body">
+          { pokemonA.name && pokemonB.name && 
+            <div className="battleView">
+              <Pokemon {...pokemonA} />
+              <Pokemon {...pokemonB} />
+            </div>
+          }
 
-        { battleResult &&
-          <div className="battleLog">
-            <p>{battleResult}</p>
+          <div className="battleResult">
+            { battleResult && 
+              <h4>Battle Log</h4> 
+            }
+
+            <div className="battleLogWrap">
+              { battleResult &&
+                <div className="battleLog">
+                    <span>{battleResult}</span>
+                </div>
+              }
+
+              <Button
+                type="primary"
+                size="large"
+                icon={<ThunderboltOutlined />}
+                loading={isLoading}
+                onClick={() => {choosePokemon()}}
+              >
+                Start Battle!
+              </Button>
+            </div>
           </div>
-        }
-
-        <Button
-          type="primary"
-          size="large"
-          loading={isLoading}
-          onClick={() => {choosePokemon()}}
-        >
-          Start Battle!
-        </Button>
+        </div>
       </header>
     </div>
   );
@@ -104,7 +118,7 @@ function calculateResult(pokemonA: IPokemon, pokemonB: IPokemon) {
   const isTie = pokemonAMovePower === pokemonBMovePower;
 
   if (isTie) {
-    return `The battle ends in a tie! Both ${pokemonA.name} and ${pokemonB.name} attacked with equal moves.`;
+    return `The battle ends in a tie! Both ${pokemonA.name} and ${pokemonB.name} attack with equal moves.`;
   } else {
     const winner = pokemonAMovePower > pokemonBMovePower ? pokemonA : pokemonB;
     const loser = winner === pokemonA ? pokemonB : pokemonA;
