@@ -9,11 +9,15 @@ type Props = {
 
 function Pokemon ({ name, image, moveName, movePower }: Props) {
   return (
-      <div className="pokemon-card">
-        <h2>{ name }</h2>
-        <p>{ moveName }</p>
-        <p>{ movePower }</p>
-        <div><img src={ image } /></div>
+      <div className="pokemonCard">
+        <div className="pokemonData">
+          <h2>{ name }</h2>
+            <div className="attackData">
+              <span>{ moveName }</span>
+              {movePower && <span>: { movePower }</span> }
+            </div>
+        </div>
+        <div className="pokemonImage"><img src={ image } /></div>
       </div>
   );
 }

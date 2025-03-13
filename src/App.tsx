@@ -37,7 +37,7 @@ function App() {
         name: pokemonBStats['name'],
         moveName: pokemonBMove['name'],
         movePower: pokemonBMove['power'],
-        image: pokemonBStats['sprites']['back_default']
+        image: pokemonBStats['sprites']['back_default'] ?? pokemonBStats['sprites']['front_default']
       }));
     } catch (error) {
       console.error('Fetch error', error);
@@ -47,8 +47,10 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <Pokemon {...pokemonA} />
-        <Pokemon {...pokemonB} />
+        <div className="battleView">
+          { pokemonA.name && <Pokemon {...pokemonA} /> }
+          { pokemonB.name && <Pokemon {...pokemonB} /> }
+        </div>
         <button onClick={() => {choosePokemon()}}>Start Battle!</button>
       </header>
     </div>
